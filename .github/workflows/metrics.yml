@@ -1,14 +1,11 @@
-name: Metrics
+name: GitHub Metrics
 
 on:
-  # Cập nhật mỗi 6 tiếng (tránh spam API rate limit quá mức của GitHub)
   schedule:
     - cron: "0 */6 * * *"
-  # Cho phép bấm Run workflow thủ công bất cứ khi nào
   workflow_dispatch:
-  # Chạy khi push thay đổi lên nhánh main/master
   push:
-    branches: ["master", "main"]
+    branches: ["main", "master"]
 
 jobs:
   github-metrics:
@@ -18,37 +15,50 @@ jobs:
     steps:
       - uses: lowlighter/metrics@latest
         with:
-          # Tên file SVG được sinh ra ở root repo
+          # Xuất file SVG vào root repo
           filename: github-metrics.svg
-          
-          # Token cấu hình trong Repository Secrets
           token: ${{ secrets.METRICS_TOKEN }}
-
-          # Options hiển thị
           user: idewithasmile
-          template: classic
-          base: header, activity, community, repositories, metadata
-          config_display: columns
-          config_timezone: Asia/Ho_Chi_Minh
 
-          # Plugin: Lịch hoạt động dạng isometric
+          # Giao diện & Hiển thị (khớp url config)
+          template: classic
+          config_display: columns
+          config_timezone: Asia/Saigon
+
+          # Base metadata
+          base: header, activity, community, repositories, metadata
+          base_indepth: false
+          base_hireable: false
+          base_skip: false
+
+          # Plugin: Introduction
+          plugin_introduction: yes
+          plugin_introduction_title: yes
+
+          # Plugin: Isocalendar (lịch đóng góp 3D cả năm)
           plugin_isocalendar: yes
           plugin_isocalendar_duration: full-year
 
-          # Plugin: Ngôn ngữ lập trình
+          # Plugin: Languages
           plugin_languages: yes
-          plugin_languages_analysis_timeout: 15
-          plugin_languages_analysis_timeout_repositories: 7.5
-          plugin_languages_categories: markup, programming
+          plugin_languages_sections: most-used
           plugin_languages_colors: github
           plugin_languages_limit: 8
-          plugin_languages_recent_categories: markup, programming
-          plugin_languages_recent_days: 14
-          plugin_languages_recent_load: 300
-          plugin_languages_sections: most-used
           plugin_languages_threshold: 0%
+          plugin_languages_other: false
+          plugin_languages_indepth: false
+          plugin_languages_categories: markup, programming
+          plugin_languages_analysis_timeout: 15
+          plugin_languages_analysis_timeout_repositories: 7.5
+          plugin_languages_recent_categories: markup, programming
+          plugin_languages_recent_load: 300
+          plugin_languages_recent_days: 14
 
-          # Tự động commit file SVG vào nhánh chính
+          # Plugin: Stars (repo đã star gần nhất)
+          plugin_stars: yes
+          plugin_stars_limit: 1
+
+          # Tự động commit file SVG vào repository
           output_action: commit
           committer_branch: main
-          committer_message: "chore: update metrics visual [skip ci]"
+          committer_message: "chore: update github-metrics.svg [skip ci]"
