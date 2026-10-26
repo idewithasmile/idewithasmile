@@ -1,38 +1,39 @@
+# Visit https://github.com/lowlighter/metrics#-documentation for full reference
 name: Metrics
-
 on:
-  schedule:
-    - cron: "0 */6 * * *"
+  # Schedule updates (each hour)
+  schedule: [{cron: "0 * * * *"}]
+  # Lines below let you run workflow manually and on each commit
   workflow_dispatch:
-  push:
-    branches: ["master", "main"]
-
+  push: {branches: ["master", "main"]}
 jobs:
   github-metrics:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Generate GitHub Metrics SVG
-        uses: lowlighter/metrics@latest
+      - uses: lowlighter/metrics@latest
         with:
+          # Your GitHub token
+          # The following scopes are required:
+          #  - public_access (default scope)
+          # The following additional scopes may be required:
+          #  - read:org      (for organization related metrics)
+          #  - read:user     (for user related data)
+          #  - read:packages (for some packages related data)
+          #  - repo          (optional, if you want to include private repositories)
           token: ${{ secrets.METRICS_TOKEN }}
+
+          # Options
           user: idewithasmile
           template: classic
           base: activity, community, repositories, metadata
           config_display: columns
           config_timezone: Asia/Saigon
-          config_padding: 0, 8%
-
           plugin_introduction: yes
           plugin_introduction_title: yes
-
           plugin_isocalendar: yes
           plugin_isocalendar_duration: full-year
-
           plugin_languages: yes
           plugin_languages_analysis_timeout: 15
           plugin_languages_analysis_timeout_repositories: 7.5
@@ -44,42 +45,7 @@ jobs:
           plugin_languages_recent_load: 300
           plugin_languages_sections: most-used
           plugin_languages_threshold: 0%
-
-          plugin_stars: yes
-          plugin_stars_limit: 1
-
-          # Xuất file ra workspace để bước sau gắn viewBox trước khi commit
-          filename: github-metrics.svg
-          output_action: none
-
-      - name: Lock 2-Column ViewBox & Commit SVG
-        run: |
-          python3 - << 'EOF'
-          import re
-
-          with open("github-metrics.svg", "r", encoding="utf-8") as f:
-              svg = f.read()
-
-          # 1. Lấy width (960) và height thực tế của SVG để gắn viewBox chuẩn tỉ lệ
-          m = re.search(r'<svg[^>]*\bwidth="(\d+)"[^>]*\bheight="(\d+)"', svg)
-          if m:
-              w, h = m.group(1), m.group(2)
-              if 'viewBox=' not in svg[:300]:
-                  svg = re.sub(r'(<svg\b[^>]*?)>', rf'\1 viewBox="0 0 {w} {h}">', svg, count=1)
-              svg = svg.replace(
-                  '<foreignObject width="100%" height="100%">',
-                  f'<foreignObject width="{w}" height="{h}">'
-              )
-
-          # 2. Vô hiệu hóa @media làm gộp 2 cột thành 1 cột khi khung README < 960px
-          svg = re.sub(r'@media\s*\([^)]*\)', '@media (max-width: 1px)', svg)
-
-          with open("github-metrics.svg", "w", encoding="utf-8") as f:
-              f.write(svg)
-          EOF
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add github-metrics.svg
-          git diff --staged --quiet || git commit -m "chore: update metrics visual [skip ci]"
-          git push
+          plugin_lines: yes
+          plugin_lines_history_limit: 1
+          plugin_lines_repositories_limit: 4
+          plugin_lines_sections: base
