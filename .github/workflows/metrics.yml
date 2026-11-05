@@ -25,10 +25,11 @@ jobs:
           token: ${{ secrets.METRICS_TOKEN }}
 
           # Options
+          user: idewithasmile
           template: classic
           base: activity, community, repositories, metadata
           config_display: large
-          config_timezone: Asia/Saigon
+          config_timezone: Asia/Ho_Chi_Minh
           plugin_isocalendar: yes
           plugin_isocalendar_duration: full-year
           plugin_languages: yes
@@ -36,6 +37,7 @@ jobs:
           plugin_languages_analysis_timeout_repositories: 7.5
           plugin_languages_categories: markup, programming
           plugin_languages_colors: github
+          plugin_languages_ignored: jupyter notebook, html, css
           plugin_languages_limit: 8
           plugin_languages_recent_categories: markup, programming
           plugin_languages_recent_days: 14
